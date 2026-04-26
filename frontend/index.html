@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MedLogic FDE Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:#080b10;--s1:#0d1117;--s2:#111827;--s3:#1a2332;
+  --border:#1e2d42;--border2:#253650;
+  --cyan:#00d4ff;--cyan2:#0891b2;--green:#10b981;--amber:#f59e0b;--red:#ef4444;
+  --text:#e2e8f0;--muted:#4b6280;--muted2:#6b849e;
+  --syne:'Syne',sans-serif;--mono:'JetBrains Mono',monospace;--serif:'Crimson Pro',Georgia,serif;
+  --r:10px;--r2:16px;--r3:20px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--syne);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;z-index:0;opacity:.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:256px;pointer-events:none}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 70% 40% at 15% 10%,rgba(0,212,255,.06) 0%,transparent 60%),
+             radial-gradient(ellipse 50% 50% at 85% 90%,rgba(16,185,129,.04) 0%,transparent 60%)}
+
+.page{display:none;position:relative;z-index:1}
+.page.on{display:block;animation:rise .45s cubic-bezier(.22,1,.36,1)}
+@keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+
+nav{display:none;position:sticky;top:0;z-index:200;
+  background:rgba(8,11,16,.9);backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);
+  padding:0 1.5rem;height:54px;align-items:center;gap:.4rem}
+nav.on{display:flex}
+.nbrand{font-weight:800;font-size:1.05rem;letter-spacing:-.03em;color:var(--cyan);
+  margin-right:auto;display:flex;align-items:center;gap:.5rem}
+.ndot{width:7px;height:7px;border-radius:50%;background:var(--cyan);
+  box-shadow:0 0 10px var(--cyan);animation:blink 2s ease infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.ntab{background:none;border:none;font-family:var(--syne);font-size:.78rem;font-weight:600;
+  color:var(--muted2);padding:.38rem .75rem;border-radius:7px;cursor:pointer;transition:all .18s}
+.ntab:hover{color:var(--text);background:rgba(255,255,255,.05)}
+.ntab.a{color:var(--cyan);background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.18)}
+.nid{font-family:var(--mono);font-size:.7rem;color:var(--muted);
+  background:rgba(255,255,255,.04);border:1px solid var(--border);padding:.28rem .65rem;border-radius:7px}
+.nout{color:var(--red)!important}
+
+/* AUTH */
+.auth-shell{min-height:100vh;display:grid;place-items:center;padding:2rem}
+.auth-box{width:100%;max-width:420px;
+  background:linear-gradient(160deg,var(--s2),var(--s1));
+  border:1px solid var(--border2);border-radius:22px;padding:2.6rem;
+  box-shadow:0 0 60px rgba(0,212,255,.07),0 40px 80px rgba(0,0,0,.6)}
+.auth-mark{text-align:center;margin-bottom:2rem}
+.auth-logo{font-weight:800;font-size:2.3rem;letter-spacing:-.05em;line-height:1}
+.auth-logo .c{color:var(--cyan)}
+.auth-tag{font-family:var(--mono);font-size:.68rem;color:var(--muted);margin-top:.45rem;letter-spacing:.1em}
+.atabs{display:flex;gap:3px;background:var(--s1);border-radius:10px;padding:3px;margin-bottom:1.7rem}
+.atab{flex:1;text-align:center;padding:.48rem;border-radius:8px;border:none;
+  font-family:var(--syne);font-size:.8rem;font-weight:700;cursor:pointer;
+  transition:all .18s;background:none;color:var(--muted)}
+.atab.a{background:var(--cyan);color:#000}
+
+.f{margin-bottom:.85rem}
+.f label{display:block;font-size:.67rem;font-weight:600;color:var(--muted);
+  margin-bottom:.32rem;letter-spacing:.1em;text-transform:uppercase;font-family:var(--mono)}
+.f input,.f select,.f textarea{
+  width:100%;background:var(--s1);border:1px solid var(--border2);
+  border-radius:8px;padding:.58rem .82rem;color:var(--text);
+  font-family:var(--syne);font-size:.86rem;outline:none;
+  transition:border-color .2s,box-shadow .2s;appearance:none}
+.f input:focus,.f select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,212,255,.1)}
+.f select option{background:var(--s2)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;
+  border:none;border-radius:9px;font-family:var(--syne);font-weight:700;
+  cursor:pointer;transition:all .2s;letter-spacing:.01em;font-size:.85rem}
+.btn-full{width:100%;padding:.7rem}
+.btn-sm{padding:.35rem .9rem;font-size:.76rem}
+.btn-md{padding:.52rem 1.1rem}
+.btn-cy{background:var(--cyan);color:#000}
+.btn-cy:hover{background:#00eaff;box-shadow:0 4px 18px rgba(0,212,255,.4);transform:translateY(-1px)}
+.btn-rd{background:var(--red);color:#fff}
+.btn-rd:hover{background:#dc2626;box-shadow:0 4px 14px rgba(239,68,68,.4)}
+.btn-gh{background:rgba(255,255,255,.05);color:var(--text);border:1px solid var(--border)}
+.btn-gh:hover{background:rgba(255,255,255,.09)}
+
+.alert{padding:.6rem .95rem;border-radius:8px;font-size:.78rem;
+  border-left:3px solid;margin-bottom:.85rem;display:none;font-family:var(--mono);line-height:1.5}
+.alert.on{display:block;animation:rise .28s ease}
+.alert.err{background:rgba(239,68,68,.08);border-color:var(--red);color:#fca5a5}
+.alert.ok{background:rgba(16,185,129,.08);border-color:var(--green);color:#6ee7b7}
+.alert.info{background:rgba(0,212,255,.08);border-color:var(--cyan);color:#7dd3fc}
+.alert.warn{background:rgba(245,158,11,.08);border-color:var(--amber);color:#fcd34d}
+
+/* LAYOUT */
+.wrap{max-width:1140px;margin:0 auto;padding:1.8rem 1.4rem}
+.tab-pane{display:none}
+.tab-pane.on{display:block;animation:rise .32s ease}
+
+.hero{background:linear-gradient(135deg,var(--s2),var(--s3));
+  border:1px solid var(--border2);border-radius:var(--r3);
+  padding:1.9rem 2.2rem;margin-bottom:1.4rem;
+  display:flex;align-items:center;gap:1.8rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50px;right:-50px;
+  width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,212,255,.1),transparent 70%);pointer-events:none}
+.hero-name{font-size:1.85rem;font-weight:800;letter-spacing:-.04em;line-height:1.15}
+.hero-hi{color:var(--muted2);font-weight:400;font-size:.9rem;display:block;margin-bottom:.2rem}
+.hero-meta{display:flex;gap:.5rem;margin-top:.75rem;flex-wrap:wrap}
+.badge{font-size:.68rem;font-family:var(--mono);padding:.22rem .55rem;
+  border-radius:6px;background:rgba(255,255,255,.05);
+  border:1px solid var(--border);color:var(--muted2)}
+.badge.c{background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.22);color:var(--cyan)}
+.hero-ico{margin-left:auto;font-size:3.2rem;opacity:.65;flex-shrink:0}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:.9rem;margin-bottom:1.4rem}
+.stat{background:var(--s2);border:1px solid var(--border);border-radius:var(--r2);
+  padding:1.1rem 1.3rem;transition:border-color .2s,transform .18s;cursor:default}
+.stat:hover{border-color:var(--border2);transform:translateY(-2px)}
+.stat-n{font-size:2.2rem;font-weight:800;letter-spacing:-.05em;line-height:1}
+.stat-l{font-size:.67rem;font-family:var(--mono);color:var(--muted);margin-top:.3rem;letter-spacing:.05em}
+.stat-s{font-size:.67rem;color:var(--muted);font-family:var(--mono);margin-top:.12rem}
+
+.card{background:var(--s2);border:1px solid var(--border);
+  border-radius:var(--r2);padding:1.4rem;margin-bottom:1.1rem}
+.card-title{font-size:.95rem;font-weight:700;margin-bottom:1.1rem;
+  padding-bottom:.75rem;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:.55rem;letter-spacing:-.01em}
+.card-title .ico{font-size:1rem}
+.card-title .sub{margin-left:auto;font-size:.67rem;font-family:var(--mono);
+  color:var(--muted);font-weight:400}
+
+.tbl{width:100%;border-collapse:collapse;font-size:.8rem}
+.tbl th{text-align:left;color:var(--muted);font-family:var(--mono);
+  font-size:.66rem;text-transform:uppercase;letter-spacing:.08em;
+  padding:.5rem .7rem;border-bottom:1px solid var(--border)}
+.tbl td{padding:.6rem .7rem;border-bottom:1px solid rgba(30,45,66,.55);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:rgba(255,255,255,.013)}
+.tbl .nm{font-weight:600;font-size:.82rem}
+.tbl .sub{font-size:.68rem;color:var(--muted);font-family:var(--mono);margin-top:.12rem}
+
+.rp{display:inline-block;padding:.2rem .5rem;border-radius:20px;
+  font-size:.65rem;font-weight:700;font-family:var(--mono);letter-spacing:.04em}
+.rp-LOW{background:rgba(16,185,129,.12);color:#34d399;border:1px solid rgba(16,185,129,.25)}
+.rp-MEDIUM,.rp-MODERATE{background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.22)}
+.rp-HIGH{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.22)}
+
+.bars{display:flex;flex-direction:column;gap:.5rem}
+.brow{display:flex;align-items:center;gap:.75rem}
+.blabel{font-family:var(--mono);font-size:.7rem;color:var(--muted2);
+  width:175px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btrack{flex:1;height:7px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden}
+.bfill{height:100%;border-radius:4px;transition:width 1s cubic-bezier(.4,0,.2,1) .05s}
+.bfill.lo{background:linear-gradient(90deg,var(--green),#34d399)}
+.bfill.md{background:linear-gradient(90deg,var(--amber),#fb923c)}
+.bfill.hi{background:linear-gradient(90deg,var(--red),#f97316);box-shadow:0 0 8px rgba(239,68,68,.28)}
+.bscore{font-size:.68rem;font-family:var(--mono);color:var(--muted);width:28px;text-align:right}
+.bcnt{font-size:.65rem;font-family:var(--mono);color:var(--muted);width:38px;text-align:right}
+
+/* AUTOCOMPLETE */
+.acw{position:relative}
+.acl{position:absolute;top:calc(100% + 3px);left:0;right:0;z-index:400;
+  background:var(--s3);border:1px solid var(--border2);border-radius:var(--r);
+  overflow:hidden;display:none;box-shadow:0 20px 50px rgba(0,0,0,.7)}
+.acl.on{display:block}
+.aci{padding:.65rem .95rem;cursor:pointer;transition:background .13s;
+  border-bottom:1px solid var(--border)}
+.aci:last-child{border-bottom:none}
+.aci:hover,.aci.sel{background:rgba(0,212,255,.07)}
+.aci-name{font-weight:600;font-size:.82rem}
+.aci-meta{font-size:.68rem;color:var(--muted);font-family:var(--mono);margin-top:.12rem}
+.aci-badge{float:right}
+
+/* RISK PANEL */
+.risk-panel{background:var(--s1);border:1px solid var(--border2);
+  border-radius:var(--r2);padding:1.3rem;display:none;margin-top:1.1rem}
+.risk-panel.on{display:block;animation:rise .28s ease}
+.risk-num{font-size:3.2rem;font-weight:800;letter-spacing:-.06em;line-height:1}
+.risk-unit{font-size:.8rem;color:var(--muted);font-family:var(--mono)}
+.risk-rec{font-size:.88rem;padding:.8rem 1rem;
+  background:rgba(255,255,255,.03);border-radius:9px;border-left:3px solid;
+  margin:.9rem 0;line-height:1.65;font-family:var(--serif)}
+.risk-rec.LOW{border-color:var(--green)}
+.risk-rec.MODERATE,.risk-rec.MEDIUM{border-color:var(--amber)}
+.risk-rec.HIGH{border-color:var(--red)}
+.algo-box{background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.12);
+  border-radius:9px;padding:.8rem 1rem;font-size:.72rem;font-family:var(--mono);
+  color:#7dd3fc;line-height:1.7;margin-top:.9rem}
+.algo-ttl{font-size:.62rem;letter-spacing:.1em;color:var(--cyan);margin-bottom:.35rem;font-weight:600}
+.alts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.55rem;margin-top:.8rem}
+.alt-card{background:rgba(16,185,129,.05);border:1px solid rgba(16,185,129,.18);
+  border-radius:9px;padding:.8rem}
+.alt-name{font-weight:700;font-size:.82rem;color:#34d399}
+.alt-comps{font-size:.66rem;color:var(--muted);font-family:var(--mono);margin-top:.28rem;line-height:1.5}
+.alt-use{font-size:.65rem;color:var(--muted);margin-top:.2rem}
+
+/* FDE PANEL */
+.fde-panel{background:var(--s1);border:1px solid rgba(239,68,68,.18);
+  border-radius:var(--r2);padding:1.3rem;display:none;margin-top:1.1rem}
+.fde-panel.on{display:block;animation:rise .28s ease}
+.fde-hdr{font-family:var(--mono);font-size:.76rem;color:var(--amber);
+  margin-bottom:.9rem;display:flex;align-items:center;gap:.45rem}
+.ctag{font-size:.7rem;font-family:var(--mono);padding:.18rem .5rem;border-radius:20px;display:inline-block}
+.ctag-r{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.22)}
+.ctag-a{background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.18)}
+.ctag-g{background:rgba(255,255,255,.05);color:var(--muted2);border:1px solid var(--border)}
+.wtbl{width:100%;border-collapse:collapse;font-size:.76rem;margin-top:.5rem}
+.wtbl th{text-align:left;font-family:var(--mono);font-size:.63rem;
+  text-transform:uppercase;letter-spacing:.08em;color:var(--muted);
+  padding:.38rem .55rem;border-bottom:1px solid var(--border)}
+.wtbl td{padding:.45rem .55rem;border-bottom:1px solid rgba(30,45,66,.4);font-family:var(--mono)}
+.wtbl tr:last-child td{border-bottom:none}
+.wt{display:inline-block;padding:.13rem .42rem;border-radius:5px;font-size:.65rem;font-weight:700}
+.wt-hi{background:rgba(239,68,68,.14);color:#f87171}
+.wt-lo{background:rgba(16,185,129,.12);color:#34d399}
+.wt-md{background:rgba(245,158,11,.1);color:#fbbf24}
+
+.tl{display:flex;flex-direction:column;gap:.7rem}
+.tli{display:flex;gap:.9rem;padding:.85rem;
+  border-radius:10px;border:1px solid var(--border);
+  background:rgba(255,255,255,.013);transition:border-color .18s}
+.tli:hover{border-color:var(--border2)}
+.tldot{width:9px;height:9px;border-radius:50%;background:var(--red);
+  margin-top:5px;flex-shrink:0;box-shadow:0 0 9px rgba(239,68,68,.45)}
+.tlmed{font-weight:700;font-size:.88rem}
+.tlcul{font-size:.7rem;color:#fca5a5;font-family:var(--mono);margin-top:.18rem}
+.tldate{font-size:.68rem;color:var(--muted);font-family:var(--mono)}
+
+/* ALGO PAGE */
+.algo-hero{background:linear-gradient(135deg,rgba(0,212,255,.05),rgba(16,185,129,.03));
+  border:1px solid rgba(0,212,255,.15);border-radius:var(--r2);
+  padding:1.6rem;margin-bottom:1.1rem}
+.algo-name-big{font-size:1.2rem;font-weight:800;color:var(--cyan);letter-spacing:-.02em;margin-bottom:.25rem}
+.algo-full-name{font-size:.76rem;color:var(--muted);font-family:var(--mono);margin-bottom:1.1rem}
+.algo-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:.75rem}
+.astep{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:.95rem}
+.astep-n{font-size:1.5rem;font-weight:800;color:var(--cyan);opacity:.35;line-height:1;margin-bottom:.35rem}
+.astep-t{font-weight:700;font-size:.8rem;margin-bottom:.28rem}
+.astep-d{font-size:.72rem;color:var(--muted2);line-height:1.55;font-family:var(--mono)}
+.wlegend{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.95rem}
+.wleg{font-size:.7rem;font-family:var(--mono);padding:.28rem .65rem;
+  border-radius:7px;background:rgba(255,255,255,.04);border:1px solid var(--border)}
+.wleg b{color:var(--cyan)}
+
+.med-info-bar{background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.14);
+  border-radius:9px;padding:.9rem;margin-top:.7rem;display:none}
+.med-info-bar.on{display:block;animation:rise .22s ease}
+.mib-name{font-weight:700;font-size:.9rem;color:var(--cyan);margin-bottom:.45rem}
+.mib-tags{display:flex;flex-wrap:wrap;gap:.4rem}
+
+.empty{text-align:center;padding:2.2rem;color:var(--muted);font-family:var(--mono);font-size:.76rem}
+.empty-ico{font-size:2.5rem;margin-bottom:.5rem;opacity:.45}
+.divider{height:1px;background:var(--border);margin:1rem 0}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--s1)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+@media(max-width:640px){
+  .g2{grid-template-columns:1fr}
+  .hero{flex-direction:column;padding:1.4rem}
+  .hero-ico{display:none}
+  nav{padding:0 .8rem;gap:.25rem}
+  .ntab{font-size:.7rem;padding:.3rem .55rem}
+  .wrap{padding:1rem .8rem}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ AUTH ══════════════ -->
+<div class="page on" id="pg-auth">
+  <div class="auth-shell">
+    <div class="auth-box">
+      <div class="auth-mark">
+        <div class="auth-logo">Med<span class="c">Logic</span></div>
+        <div class="auth-tag">FIXED DRUG ERUPTION · INTELLIGENCE SYSTEM</div>
+      </div>
+      <div class="atabs">
+        <button class="atab a" onclick="authTab('login')">Sign In</button>
+        <button class="atab" onclick="authTab('register')">Register</button>
+      </div>
+      <div class="alert" id="auth-alert"></div>
+
+      <div id="form-login">
+        <div class="f"><label>Patient ID</label>
+          <input id="l-pid" placeholder="e.g. PT001" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+        <div class="f"><label>Password</label>
+          <input id="l-pw" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+        <button class="btn btn-cy btn-full" onclick="doLogin()">Sign In →</button>
+      </div>
+
+      <div id="form-reg" style="display:none">
+        <div class="g2">
+          <div class="f"><label>Patient ID</label><input id="r-pid" placeholder="PT001"/></div>
+          <div class="f"><label>Full Name</label><input id="r-name" placeholder="Your Name"/></div>
+        </div>
+        <div class="g2">
+          <div class="f"><label>Age</label><input id="r-age" type="number" placeholder="25"/></div>
+          <div class="f"><label>Gender</label>
+            <select id="r-gen"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select>
+          </div>
+        </div>
+        <div class="g2">
+          <div class="f"><label>Blood Group</label>
+            <select id="r-blood"><option value="">Select</option>
+              <option>A+</option><option>A−</option><option>B+</option><option>B−</option>
+              <option>AB+</option><option>AB−</option><option>O+</option><option>O−</option></select>
+          </div>
+          <div class="f"><label>Contact</label><input id="r-contact" placeholder="Phone / Email"/></div>
+        </div>
+        <div class="f"><label>Password</label><input id="r-pw" type="password" placeholder="Choose password"/></div>
+        <button class="btn btn-cy btn-full" onclick="doRegister()">Create Account →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ NAV ══════════════ -->
+<nav id="nav">
+  <div class="nbrand"><div class="ndot"></div>MedLogic FDE</div>
+  <button class="ntab a" onclick="showTab('dashboard')">Dashboard</button>
+  <button class="ntab" onclick="showTab('dosage')">Medications</button>
+  <button class="ntab" onclick="showTab('fde-check')">FDE Check</button>
+  <button class="ntab" onclick="showTab('fde-events')">FDE Events</button>
+  <button class="ntab" onclick="showTab('algorithm')">Algorithm</button>
+  <button class="ntab" onclick="showTab('image-scan')">🔬 Image Scan</button>
+  <div class="nid" id="nav-pid">—</div>
+  <button class="ntab nout" onclick="logout()">Logout</button>
+</nav>
+
+<!-- ══════════════ MAIN APP ══════════════ -->
+<div class="page" id="pg-main">
+<div class="wrap">
+
+  <!-- DASHBOARD -->
+  <div class="tab-pane on" id="tab-dashboard">
+    <div class="hero">
+      <div>
+        <div class="hero-name"><span class="hero-hi">Patient Profile /</span><span id="d-name">—</span></div>
+        <div class="hero-meta">
+          <span class="badge c" id="d-pid">—</span>
+          <span class="badge" id="d-age">—</span>
+          <span class="badge" id="d-gender">—</span>
+          <span class="badge" id="d-blood">—</span>
+        </div>
+      </div>
+      <div class="hero-ico">🧬</div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-n" style="color:var(--cyan)" id="s-meds">—</div>
+        <div class="stat-l">Medications Logged</div>
+      </div>
+      <div class="stat">
+        <div class="stat-n" style="color:var(--red)" id="s-fde">—</div>
+        <div class="stat-l">FDE Events</div>
+        <div class="stat-s">recorded reactions</div>
+      </div>
+      <div class="stat">
+        <div class="stat-n" style="color:var(--amber)" id="s-flag">—</div>
+        <div class="stat-l">Flagged Components</div>
+        <div class="stat-s">WCIS score ≥ 3.0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-n" style="color:var(--red);font-size:1.1rem;padding-top:.5rem" id="s-top">—</div>
+        <div class="stat-l">Top Culprit Component</div>
+        <div class="stat-s">highest WCIS score</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="ico">⚠️</span> Personal Risk Profile
+        <span class="sub">WCIS scores — higher = more dangerous for YOU specifically</span></div>
+      <div id="bars-dash" class="bars">
+        <div class="empty"><div class="empty-ico">🛡️</div>No FDE data yet. Profile is clean.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="ico">💊</span> Recent Medications <span class="sub">last 5</span></div>
+      <div id="dash-doses"></div>
+    </div>
+  </div>
+
+  <!-- MEDICATIONS -->
+  <div class="tab-pane" id="tab-dosage">
+    <div class="card">
+      <div class="card-title"><span class="ico">➕</span> Log New Medication</div>
+      <div class="alert" id="dose-alert"></div>
+      <div class="f acw">
+        <label>Search Medicine from Database (1,600 drugs)</label>
+        <input id="d-med" placeholder="Type medicine name to search & autofill..." autocomplete="off"
+               oninput="acSearch(this.value,'acl-d','fillDMed')"/>
+        <div class="acl" id="acl-d"></div>
+      </div>
+      <div class="med-info-bar" id="dmi">
+        <div class="mib-name" id="dmi-name"></div>
+        <div class="mib-tags" id="dmi-tags"></div>
+      </div>
+      <div class="f">
+        <label>Components (auto-filled · or enter manually, comma-separated)</label>
+        <input id="d-comp" placeholder="e.g. ibuprofen, cellulose, starch"/>
+      </div>
+      <div class="g2">
+        <div class="f"><label>Dosage</label><input id="d-dose" placeholder="e.g. 400mg"/></div>
+        <div class="f"><label>Frequency</label><input id="d-freq" placeholder="e.g. Twice daily"/></div>
+      </div>
+      <div class="g2">
+        <div class="f"><label>Duration</label><input id="d-dur" placeholder="e.g. 5 days"/></div>
+        <div class="f"><label>Prescribed Date</label><input id="d-date" type="date"/></div>
+      </div>
+      <div class="f"><label>Notes</label><input id="d-notes" placeholder="Optional notes"/></div>
+      <button class="btn btn-cy btn-md" onclick="addDosage()">💾 Save Medication</button>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="ico">📋</span> All Medications</div>
+      <div id="all-doses"></div>
+    </div>
+  </div>
+
+  <!-- FDE CHECK -->
+  <div class="tab-pane" id="tab-fde-check">
+    <div class="card">
+      <div class="card-title"><span class="ico">🔬</span> Pre-Prescription FDE Risk Check
+        <span class="sub">personalised per patient · WCIS algorithm</span></div>
+      <p style="font-size:.78rem;color:var(--muted2);margin-bottom:1.1rem;line-height:1.65;font-family:var(--mono)">
+        Search any medicine before taking it. The system calculates your personal risk score using your unique FDE history.
+      </p>
+      <div class="alert" id="pred-alert"></div>
+      <div class="f acw">
+        <label>Search Medicine</label>
+        <input id="p-med" placeholder="Type medicine name..." autocomplete="off"
+               oninput="acSearch(this.value,'acl-p','fillPMed')"/>
+        <div class="acl" id="acl-p"></div>
+      </div>
+      <div class="f">
+        <label>Components (auto-filled from database)</label>
+        <input id="p-comp" placeholder="Auto-filled · or enter manually, comma-separated"/>
+      </div>
+      <button class="btn btn-cy btn-md" onclick="checkRisk()">🔍 Analyze Risk</button>
+
+      <div class="risk-panel" id="risk-panel">
+        <div style="display:flex;align-items:flex-start;gap:2rem;flex-wrap:wrap;margin-bottom:.9rem">
+          <div>
+            <div style="font-size:.62rem;font-family:var(--mono);color:var(--muted);letter-spacing:.1em;margin-bottom:.28rem">WCIS RISK SCORE</div>
+            <div style="display:flex;align-items:baseline;gap:.5rem">
+              <div class="risk-num" id="pr-score">0</div>
+              <div class="risk-unit">pts</div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:.62rem;font-family:var(--mono);color:var(--muted);letter-spacing:.1em;margin-bottom:.4rem">RISK LEVEL</div>
+            <div id="pr-level"></div>
+          </div>
+          <div>
+            <div style="font-size:.62rem;font-family:var(--mono);color:var(--muted);letter-spacing:.1em;margin-bottom:.4rem">RAW SCORE</div>
+            <div style="font-family:var(--mono);font-size:.85rem;color:var(--muted2)" id="pr-raw">—</div>
+          </div>
+        </div>
+        <div class="risk-rec" id="pr-rec"></div>
+        <div id="pr-comp-risks" style="margin-bottom:.8rem"></div>
+        <div class="algo-box">
+          <div class="algo-ttl">⚙ WCIS ALGORITHM TRACE</div>
+          <div id="pr-algo-note">—</div>
+        </div>
+        <div id="pr-alts-wrap" style="display:none;margin-top:1.1rem">
+          <div style="font-size:.65rem;font-family:var(--mono);color:var(--green);letter-spacing:.08em;margin-bottom:.55rem">✓ SAFE ALTERNATIVES — same therapeutic use, zero flagged components</div>
+          <div id="pr-alts" class="alts-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="ico">🚨</span> Report FDE Reaction
+        <span class="sub">triggers WCIS model update</span></div>
+      <p style="font-size:.78rem;color:var(--muted2);margin-bottom:1.1rem;line-height:1.65;font-family:var(--mono)">
+        Experienced a reaction? Select the medication that caused it. WCIS will compute intersections with all your past FDE events and re-weight the culprit components automatically.
+      </p>
+      <div class="alert" id="fde-alert"></div>
+      <div class="f">
+        <label>Which medication caused FDE?</label>
+        <select id="fde-sel"><option value="">— Select medication —</option></select>
+      </div>
+      <div class="f">
+        <label>Severity</label>
+        <select id="fde-sev">
+          <option value="mild">Mild</option>
+          <option value="moderate" selected>Moderate</option>
+          <option value="severe">Severe</option>
+        </select>
+      </div>
+      <button class="btn btn-rd btn-md" onclick="reportFDE()">🚨 Report FDE Event</button>
+
+      <div class="fde-panel" id="fde-panel">
+        <div class="fde-hdr">⚡ WCIS UPDATE COMPLETE — Risk profile recalculated</div>
+        <div id="fde-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FDE EVENTS -->
+  <div class="tab-pane" id="tab-fde-events">
+    <div class="card">
+      <div class="card-title"><span class="ico">📅</span> FDE Event History</div>
+      <div id="fde-tl" class="tl"><div class="empty"><div class="empty-ico">✅</div>No FDE events yet.</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="ico">🏆</span> Top Culprit Components <span class="sub">all time · WCIS ranked</span></div>
+      <div id="bars-full" class="bars"><div class="empty"><div class="empty-ico">📊</div>No data.</div></div>
+    </div>
+  </div>
+
+  <!-- ALGORITHM -->
+  <div class="tab-pane" id="tab-algorithm">
+    <div class="algo-hero">
+      <div class="algo-name-big">WCIS Algorithm</div>
+      <div class="algo-full-name">Weighted Component Intersection Scoring — custom online Bayesian-inspired incremental learning</div>
+      <div class="algo-steps">
+        <div class="astep">
+          <div class="astep-n">01</div>
+          <div class="astep-t">First FDE — Prior Assignment</div>
+          <div class="astep-d">All components of the reacting drug get base weight <b style="color:var(--cyan)">+2.0</b>. No narrowing yet — all are suspects. Analogous to a uniform prior in Bayesian inference.</div>
+        </div>
+        <div class="astep">
+          <div class="astep-n">02</div>
+          <div class="astep-t">Repeat FDE — Intersection + Likelihood Update</div>
+          <div class="astep-d">WCIS computes <b style="color:var(--cyan)">NewSet ∩ PastFDE[i]</b> for every past FDE event. Common components get weight <b style="color:var(--cyan)">3.0 + (overlaps−1)×1.5</b>. More overlaps = stronger culprit evidence.</div>
+        </div>
+        <div class="astep">
+          <div class="astep-n">03</div>
+          <div class="astep-t">Risk Scoring — Additive Model</div>
+          <div class="astep-d">For any new drug: <b style="color:var(--cyan)">Risk = Σ score(c)</b> for each component c, lightly normalized for large component counts. Thresholds: LOW &lt; 3, MODERATE 3–7, HIGH ≥ 7.</div>
+        </div>
+        <div class="astep">
+          <div class="astep-n">04</div>
+          <div class="astep-t">Safe Alternative Search</div>
+          <div class="astep-d">Scans 1,600-medicine database. Matches same <b style="color:var(--cyan)">Used_For</b> category. Returns drugs with <b style="color:var(--cyan)">zero risky components</b> (score ≥ 3.0) — safe swaps with identical therapeutic effect.</div>
+        </div>
+      </div>
+      <div class="wlegend">
+        <div class="wleg">1st FDE → <b>+2.0</b> per component</div>
+        <div class="wleg">1 overlap → <b>+3.0</b></div>
+        <div class="wleg">2 overlaps → <b>+4.5</b></div>
+        <div class="wleg">3 overlaps → <b>+6.0</b></div>
+        <div class="wleg">no overlap → <b>+0.5</b></div>
+        <div class="wleg">LOW &lt;<b>3</b> · MOD 3–7 · HIGH ≥<b>7</b></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="ico">🧮</span> Why Not Random Forest / SVM / XGBoost?</div>
+      <div style="font-size:.8rem;color:var(--muted2);line-height:1.85;font-family:var(--mono)">
+        Standard classifiers need <span style="color:var(--text)">hundreds of labelled training samples per patient</span> before they can predict. FDE is rare — a patient may have only 1–3 lifetime events. RandomForest would have zero data to build trees from.<br><br>
+        WCIS is an <span style="color:var(--cyan)">online incremental algorithm</span> — it learns meaningfully from the very first event and improves with each subsequent one. It is <span style="color:var(--cyan)">fully per-patient</span> — Patient A's penicillin score never contaminates Patient B's model. A population-trained RandomForest cannot achieve this level of personalization.<br><br>
+        Complexity: <span style="color:var(--cyan)">O(E × C)</span> per update where E = past FDE events, C = components per drug. Efficient and deterministic.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="ico">📊</span> Your Live WCIS Model State</div>
+      <div id="algo-state"><div class="empty"><div class="empty-ico">⚙️</div>No FDE events yet. Report a reaction to see your model state.</div></div>
+    </div>
+  </div>
+
+  <!-- IMAGE SCAN TAB -->
+  <div class="tab-pane" id="tab-image-scan">
+    <!-- Model Status Card -->
+    <div class="card" id="img-status-card">
+      <div class="card-title"><span class="ico">🤖</span> CNN Model Status</div>
+      <div id="img-model-status" style="font-size:.8rem;color:var(--muted2);font-family:var(--mono)">
+        Checking model…
+      </div>
+    </div>
+
+    <!-- Upload & Predict Card -->
+    <div class="card">
+      <div class="card-title"><span class="ico">📷</span> FDE Image Analysis <span class="sub">MobileNetV2 · DermNet</span></div>
+      <div id="img-alert" class="alert"></div>
+
+      <label style="font-size:.75rem;color:var(--muted2);margin-bottom:.4rem;display:block">
+        Upload a skin lesion photo (JPEG / PNG / WEBP · max 10 MB)
+      </label>
+
+      <!-- Drop zone -->
+      <div id="img-dropzone" style="border:2px dashed rgba(0,212,255,.35);border-radius:12px;
+           padding:2.2rem 1rem;text-align:center;cursor:pointer;transition:.2s;margin-bottom:1rem"
+           onclick="document.getElementById('img-file').click()"
+           ondragover="event.preventDefault();this.style.borderColor='var(--cyan)'"
+           ondragleave="this.style.borderColor='rgba(0,212,255,.35)'"
+           ondrop="handleImgDrop(event)">
+        <div style="font-size:2rem;margin-bottom:.5rem">🖼️</div>
+        <div style="color:var(--muted2);font-size:.8rem">Click to browse or drag & drop image here</div>
+      </div>
+      <input type="file" id="img-file" accept="image/*" style="display:none" onchange="previewImg(this)">
+
+      <!-- Preview -->
+      <div id="img-preview-wrap" style="display:none;margin-bottom:1rem;text-align:center">
+        <img id="img-preview" style="max-height:220px;max-width:100%;border-radius:10px;
+             border:1px solid rgba(255,255,255,.1)" src="" alt="preview">
+        <div id="img-fname" style="font-size:.72rem;color:var(--muted2);margin-top:.4rem"></div>
+      </div>
+
+      <!-- Controls -->
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1rem">
+        <button class="btn" onclick="runImgPredict(false)" id="btn-img-predict">
+          🧠 Analyse Image
+        </button>
+        <button class="btn" style="background:rgba(255,255,255,.06)" onclick="runImgPredict(true)" id="btn-gradcam">
+          🌡️ GRAD-CAM Heatmap
+        </button>
+        <button class="btn" style="background:rgba(255,255,255,.04);color:var(--muted2)" onclick="clearImgState()">
+          ✕ Clear
+        </button>
+      </div>
+
+      <!-- Combined mode toggle -->
+      <details style="margin-bottom:1rem">
+        <summary style="font-size:.75rem;color:var(--cyan);cursor:pointer;user-select:none">
+          ⚕️ Combined mode — add medicine components for WCIS + CNN scoring
+        </summary>
+        <div style="margin-top:.8rem;display:flex;flex-direction:column;gap:.6rem">
+          <div>
+            <label style="font-size:.72rem;color:var(--muted2)">Medicine name (optional)</label>
+            <input id="img-medname" class="inp" placeholder="e.g. Amoxicillin" style="margin-top:.3rem">
+          </div>
+          <div>
+            <label style="font-size:.72rem;color:var(--muted2)">Components (comma-separated)</label>
+            <input id="img-components" class="inp" placeholder="e.g. Amoxicillin, Clavulanic acid" style="margin-top:.3rem">
+          </div>
+          <button class="btn" onclick="runImgCombined()">⚡ Combined Analysis</button>
+        </div>
+      </details>
+
+      <!-- Loader -->
+      <div id="img-loader" style="display:none;text-align:center;padding:1.5rem">
+        <div class="spinner" style="margin:auto"></div>
+        <div id="img-loader-text" style="font-size:.78rem;color:var(--muted2);margin-top:.8rem">Analysing…</div>
+      </div>
+    </div>
+
+    <!-- Result Card -->
+    <div class="card" id="img-result-card" style="display:none">
+      <div class="card-title"><span class="ico">📊</span> Prediction Result</div>
+      <div id="img-result-body"></div>
+    </div>
+
+    <!-- GRAD-CAM Card -->
+    <div class="card" id="img-gradcam-card" style="display:none">
+      <div class="card-title"><span class="ico">🌡️</span> GRAD-CAM Heatmap <span class="sub">CNN attention map</span></div>
+      <div style="font-size:.72rem;color:var(--muted2);margin-bottom:.8rem">
+        Red/yellow regions = areas the CNN weighted most heavily in its prediction.
+        Use this to verify the model is looking at the skin lesion, not image artifacts.
+      </div>
+      <div style="text-align:center">
+        <img id="img-gradcam" style="max-width:100%;border-radius:10px;border:1px solid rgba(255,255,255,.1)" src="" alt="GRAD-CAM">
+      </div>
+    </div>
+  </div>
+
+
+</div><!-- /wrap -->
+</div><!-- /pg-main -->
+
+<script>
+const API='http://127.0.0.1:5000/api';
+let U=null, doses=[], acT=null;
+
+// ── AUTH ──────────────────────────────────────────────
+function authTab(t){
+  document.getElementById('form-login').style.display=t==='login'?'':'none';
+  document.getElementById('form-reg').style.display=t==='register'?'':'none';
+  document.querySelectorAll('.atab').forEach((b,i)=>b.classList.toggle('a',(i===0)===(t==='login')));
+  clrA('auth-alert');
+}
+async function doLogin(){
+  const pid=v('l-pid'),pw=v('l-pw');
+  if(!pid||!pw)return showA('auth-alert','Fill in Patient ID and password.','err');
+  try{
+    const r=await api('POST',`${API}/auth/login`,{patient_id:pid,password:pw});
+    if(r.error)return showA('auth-alert',r.error||'Login failed.','err');
+    if(!r.patient)return showA('auth-alert','Server returned no patient data.','err');
+    U=r.patient; enterApp();
+  }catch(e){showA('auth-alert','Cannot reach server. Is Flask running on port 5000?','err');}
+}
+async function doRegister(){
+  const b={patient_id:v('r-pid'),name:v('r-name'),age:v('r-age'),
+    gender:v('r-gen'),blood_group:v('r-blood'),contact:v('r-contact'),password:v('r-pw')};
+  if(!b.patient_id||!b.name||!b.password)return showA('auth-alert','Fill all required fields.','err');
+  try{
+    const r=await api('POST',`${API}/auth/register`,b);
+    if(r.error)return showA('auth-alert',r.error,'err');
+    showA('auth-alert','✅ Registered! Sign in now.','ok');
+    setTimeout(()=>authTab('login'),1200);
+  }catch(e){showA('auth-alert','Server error.','err');}
+}
+function logout(){U=null;doses=[];document.getElementById('nav').classList.remove('on');showPage('pg-auth');}
+
+// ── APP ───────────────────────────────────────────────
+async function enterApp(){
+  document.getElementById('nav').classList.add('on');
+  document.getElementById('nav-pid').textContent=U.patient_id;
+  showPage('pg-main'); showTab('dashboard'); await loadAll();
+}
+async function loadAll(){
+  try{
+    const d=await api('GET',`${API}/patient/${U.patient_id}`);
+    U={...U,...d.patient}; doses=d.dosage_history||[];
+    const fdeEvts=d.fde_events||[], prof=d.risk_profile||[];
+
+    // hero
+    document.getElementById('d-name').textContent=U.name;
+    document.getElementById('d-pid').textContent=U.patient_id;
+    document.getElementById('d-age').textContent=`Age: ${U.age||'—'}`;
+    document.getElementById('d-gender').textContent=U.gender||'—';
+    document.getElementById('d-blood').textContent=U.blood_group||'—';
+
+    // stats
+    document.getElementById('s-meds').textContent=doses.length;
+    document.getElementById('s-fde').textContent=fdeEvts.length;
+    document.getElementById('s-flag').textContent=prof.filter(p=>p.score>=3).length;
+    document.getElementById('s-top').textContent=prof.length?prof[0].component:'Clean ✅';
+
+    // bars
+    renderBars('bars-dash',prof,10);
+    renderBars('bars-full',prof,20);
+
+    // tables
+    renderDoseTbl('dash-doses',doses.slice(0,5));
+    renderDoseTbl('all-doses',doses);
+
+    // fde select
+    fillFDESel(doses);
+
+    // timeline
+    renderTL(fdeEvts);
+
+    // algo state
+    renderAlgoState(prof);
+
+  }catch(e){
+    // loadAll error — stay on dashboard, do NOT redirect to login
+    console.error('[loadAll] error (staying on dashboard):', e);
+  }
+}
+
+// ── BARS ──────────────────────────────────────────────
+function renderBars(id,prof,lim=12){
+  const el=document.getElementById(id);
+  if(!prof.length){el.innerHTML='<div class="empty"><div class="empty-ico">🛡️</div>No FDE data yet.</div>';return;}
+  const max=Math.max(...prof.map(p=>p.score),1);
+  el.innerHTML=prof.slice(0,lim).map(p=>{
+    const pct=(p.score/max*100).toFixed(1);
+    const cls=p.score>=7?'hi':p.score>=3?'md':'lo';
+    return `<div class="brow">
+      <div class="blabel" title="${p.component}">${p.component}</div>
+      <div class="btrack"><div class="bfill ${cls}" style="width:0%" data-p="${pct}"></div></div>
+      <div class="bscore">${p.score.toFixed(1)}</div>
+      <div class="bcnt">${p.fde_count}×</div>
+    </div>`;
+  }).join('');
+  requestAnimationFrame(()=>el.querySelectorAll('.bfill').forEach(b=>setTimeout(()=>{b.style.width=b.dataset.p+'%';},40)));
+}
+
+// ── DOSE TABLE ────────────────────────────────────────
+function renderDoseTbl(id,data){
+  const el=document.getElementById(id);
+  if(!data.length){el.innerHTML='<div class="empty"><div class="empty-ico">💊</div>No medications logged yet.</div>';return;}
+  el.innerHTML=`<table class="tbl"><thead><tr><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Date</th><th>FDE</th><th>Action</th></tr></thead>
+  <tbody>${data.map(d=>`<tr>
+    <td><div class="nm">${d.medicine_name}</div><div class="sub">${d.components.split(',').slice(0,3).join(' · ')}</div></td>
+    <td style="font-family:var(--mono);font-size:.75rem">${d.dosage||'—'}</td>
+    <td style="font-size:.78rem;color:var(--muted2)">${d.frequency||'—'}</td>
+    <td style="font-family:var(--mono);font-size:.72rem">${d.prescribed_date||d.created_at?.split('T')[0]||'—'}</td>
+    <td>${d.fde_occurred?'<span class="rp rp-HIGH">⚠ FDE</span>':'<span class="rp rp-LOW">Clear</span>'}</td>
+    <td>${!d.fde_occurred
+      ?`<button class="btn btn-rd btn-sm" onclick="quickFDE(${d.id})">Report FDE</button>`
+      :'<span style="color:var(--muted);font-size:.68rem;font-family:var(--mono)">Reported</span>'}
+    </td>
+  </tr>`).join('')}</tbody></table>`;
+}
+
+// ── FDE SELECT ───────────────────────────────────────
+function fillFDESel(data){
+  const s=document.getElementById('fde-sel');
+  s.innerHTML='<option value="">— Select medication —</option>';
+  data.filter(d=>!d.fde_occurred).forEach(d=>{
+    s.innerHTML+=`<option value="${d.id}">${d.medicine_name} · ${d.prescribed_date||'no date'}</option>`;
+  });
+}
+
+// ── TIMELINE ─────────────────────────────────────────
+function renderTL(events){
+  const el=document.getElementById('fde-tl');
+  if(!events.length){el.innerHTML='<div class="empty"><div class="empty-ico">✅</div>No FDE events. Stay safe!</div>';return;}
+  el.innerHTML=events.map((e,i)=>`<div class="tli">
+    <div class="tldot"></div>
+    <div style="flex:1">
+      <div class="tlmed">FDE #${events.length-i} — ${e.medicine_name}</div>
+      <div class="tlcul">Culprits: ${e.culprit_components||'(computing...)'}</div>
+      <div style="display:flex;gap:.7rem;align-items:center;margin-top:.3rem">
+        <span class="rp rp-${e.severity==='severe'?'HIGH':e.severity==='mild'?'LOW':'MODERATE'}">${e.severity}</span>
+        <span class="tldate">${e.event_date||e.created_at?.split('T')[0]||'—'}</span>
+      </div>
+    </div>
+  </div>`).join('');
+}
+
+// ── ALGO STATE ────────────────────────────────────────
+function renderAlgoState(prof){
+  const el=document.getElementById('algo-state');
+  if(!prof.length){el.innerHTML='<div class="empty"><div class="empty-ico">⚙️</div>No FDE events yet.</div>';return;}
+  el.innerHTML=`<table class="wtbl">
+    <thead><tr><th>Component</th><th>WCIS Score</th><th>FDE Count</th><th>Risk Level</th></tr></thead>
+    <tbody>${prof.map(p=>{
+      const l=p.score>=7?'HIGH':p.score>=3?'MODERATE':'LOW';
+      const c=p.score>=7?'wt-hi':p.score>=3?'wt-md':'wt-lo';
+      return `<tr>
+        <td style="font-family:var(--mono);color:var(--text)">${p.component}</td>
+        <td><span class="wt ${c}">${p.score.toFixed(2)}</span></td>
+        <td style="font-family:var(--mono);color:var(--muted)">${p.fde_count}×</td>
+        <td><span class="rp rp-${l}">${l}</span></td>
+      </tr>`;
+    }).join('')}</tbody></table>`;
+}
+
+// ── AUTOCOMPLETE ──────────────────────────────────────
+function acSearch(q,lid,cb){
+  clearTimeout(acT);
+  const l=document.getElementById(lid);
+  if(q.length<2){l.classList.remove('on');return;}
+  acT=setTimeout(async()=>{
+    try{
+      const r=await api('GET',`${API}/predict/search_medicine?q=${encodeURIComponent(q)}`);
+      if(!r.results?.length){l.classList.remove('on');return;}
+      l.innerHTML=r.results.map(m=>`
+        <div class="aci" onclick="${cb}(${JSON.stringify(m).replace(/"/g,'&quot;')})"
+             onmouseover="this.classList.add('sel')" onmouseout="this.classList.remove('sel')">
+          <span class="aci-badge"><span class="rp rp-${m.risk_level}">${m.risk_level}</span></span>
+          <div class="aci-name">${m.name}</div>
+          <div class="aci-meta">${m.used_for} · ${m.components.slice(0,3).join(', ')}</div>
+        </div>`).join('');
+      l.classList.add('on');
+    }catch(e){}
+  },240);
+}
+document.addEventListener('click',e=>{
+  document.querySelectorAll('.acl').forEach(l=>{if(!l.contains(e.target))l.classList.remove('on');});
+});
+
+function fillDMed(m){
+  document.getElementById('d-med').value=m.name;
+  document.getElementById('d-comp').value=m.components.join(', ');
+  document.getElementById('acl-d').classList.remove('on');
+  const info=document.getElementById('dmi');
+  info.classList.add('on');
+  document.getElementById('dmi-name').textContent=m.name;
+  document.getElementById('dmi-tags').innerHTML=
+    `<span class="badge c">${m.used_for}</span><span class="rp rp-${m.risk_level}">${m.risk_level}</span><span class="badge">${m.type}</span>`;
+}
+function fillPMed(m){
+  document.getElementById('p-med').value=m.name;
+  document.getElementById('p-comp').value=m.components.join(', ');
+  document.getElementById('acl-p').classList.remove('on');
+}
+
+// ── ADD DOSAGE ────────────────────────────────────────
+async function addDosage(){
+  const comps=v('d-comp').split(',').map(s=>s.trim()).filter(Boolean);
+  const b={medicine_name:v('d-med'),components:comps,dosage:v('d-dose'),
+    frequency:v('d-freq'),duration:v('d-dur'),prescribed_date:v('d-date'),notes:v('d-notes')};
+  if(!b.medicine_name||!comps.length)return showA('dose-alert','Medicine name and components required.','err');
+  try{
+    const r=await api('POST',`${API}/patient/${U.patient_id}/dosage`,b);
+    if(r.error)return showA('dose-alert',r.error,'err');
+    showA('dose-alert',`✅ ${b.medicine_name} saved to your profile!`,'ok');
+    ['d-med','d-comp','d-dose','d-freq','d-dur','d-date','d-notes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('dmi').classList.remove('on');
+    try{ await loadAll(); }catch(_){ /* reload failed but stay on page */ }
+  }catch(e){showA('dose-alert','Server error — check Flask is running.','err');}
+}
+
+// ── CHECK RISK ────────────────────────────────────────
+async function checkRisk(){
+  const med=v('p-med'), comps=v('p-comp').split(',').map(s=>s.trim()).filter(Boolean);
+  if(!med||!comps.length)return showA('pred-alert','Enter medicine name and components.','err');
+  clrA('pred-alert');
+  try{
+    const r=await api('POST',`${API}/predict/check_risk`,{patient_id:U.patient_id,medicine_name:med,components:comps});
+    if(r.error)return showA('pred-alert',r.error,'err');
+    const risk=r.risk, panel=document.getElementById('risk-panel');
+    panel.classList.add('on');
+
+    const col={HIGH:'var(--red)',MODERATE:'var(--amber)',LOW:'var(--green)'};
+    const sc=document.getElementById('pr-score');
+    sc.textContent=risk.risk_score; sc.style.color=col[risk.risk_level]||'var(--cyan)';
+    document.getElementById('pr-raw').textContent=`raw: ${risk.raw_score}`;
+    document.getElementById('pr-level').innerHTML=`<span class="rp rp-${risk.risk_level}" style="font-size:.95rem;padding:.38rem .85rem">${risk.risk_level}</span>`;
+    const rec=document.getElementById('pr-rec');
+    rec.textContent=r.recommendation; rec.className=`risk-rec ${risk.risk_level}`;
+
+    // per-component breakdown
+    const cr=risk.component_risks||{}, crEl=document.getElementById('pr-comp-risks');
+    if(Object.keys(cr).length){
+      crEl.innerHTML=`<div style="font-size:.62rem;font-family:var(--mono);color:var(--muted);letter-spacing:.1em;margin-bottom:.4rem">COMPONENT BREAKDOWN</div>`+
+        Object.entries(cr).map(([c,s])=>{
+          const cls=s>=7?'wt-hi':s>=3?'wt-md':'wt-lo';
+          return `<span style="font-family:var(--mono);font-size:.72rem;margin-right:.55rem;margin-bottom:.25rem;display:inline-block">${c} <span class="wt ${cls}">+${s}</span></span>`;
+        }).join('');
+    }else{crEl.innerHTML='';}
+
+    document.getElementById('pr-algo-note').textContent=risk.algorithm_note;
+
+    const aw=document.getElementById('pr-alts-wrap');
+    if(r.alternatives?.length){
+      aw.style.display='';
+      document.getElementById('pr-alts').innerHTML=r.alternatives.map(a=>`
+        <div class="alt-card">
+          <div class="alt-name">💊 ${a.name}</div>
+          <div class="alt-comps">${a.components?.slice(0,5).join(' · ')}</div>
+          <div class="alt-use">${a.used_for} · <span class="rp rp-${a.risk_level}" style="font-size:.58rem">${a.risk_level}</span></div>
+        </div>`).join('');
+    }else{aw.style.display='none';}
+  }catch(e){showA('pred-alert','Server error: '+e.message,'err');}
+}
+
+// ── REPORT FDE ────────────────────────────────────────
+async function reportFDE(){
+  const did=document.getElementById('fde-sel').value;
+  const sev=document.getElementById('fde-sev').value;
+  if(!did)return showA('fde-alert','Select a medication first.','err');
+  try{
+    const r=await api('POST',`${API}/predict/report_fde`,{patient_id:U.patient_id,dosage_id:parseInt(did),severity:sev});
+    if(r.error)return showA('fde-alert',r.error,'err');
+    const a=r.analysis, panel=document.getElementById('fde-panel');
+    panel.classList.add('on');
+    document.getElementById('fde-body').innerHTML=`
+      <div style="margin-bottom:.8rem;font-size:.78rem;color:var(--muted2);font-family:var(--mono)">
+        ${a.is_first_fde
+          ?'⚡ <span style="color:var(--amber)">First FDE recorded.</span> All components assigned base weight +2.0. WCIS will narrow culprits on repeat events.'
+          :`🔁 <span style="color:var(--red)">Repeat FDE #${a.past_fde_count+1}.</span> Intersection computed against ${a.past_fde_count} past FDE event(s).`}
+      </div>
+      <div class="algo-box" style="margin-bottom:.9rem">
+        <div class="algo-ttl">ALGORITHM USED</div>
+        ${a.algorithm}<br><span style="color:var(--muted2)">${a.explanation}</span>
+      </div>
+      ${a.common_components?.length?`
+        <div style="font-size:.62rem;font-family:var(--mono);color:var(--red);letter-spacing:.1em;margin-bottom:.38rem">⚠ CONFIRMED CULPRITS (intersection found)</div>
+        <div style="display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.9rem">${a.common_components.map(c=>`<span class="ctag ctag-r">${c}</span>`).join('')}</div>`:''}
+      <div style="font-size:.62rem;font-family:var(--mono);color:var(--muted);letter-spacing:.1em;margin-bottom:.38rem">WEIGHTS APPLIED THIS EVENT</div>
+      <table class="wtbl">
+        <thead><tr><th>Component</th><th>Weight Added</th><th>New Total Score</th></tr></thead>
+        <tbody>${Object.entries(a.weights_applied||{}).map(([c,w])=>{
+          const tot=a.current_scores?.[c]||w;
+          const cls=w>=3?'wt-hi':w>=2?'wt-md':'wt-lo';
+          return `<tr>
+            <td style="font-family:var(--mono)">${c}</td>
+            <td><span class="wt ${cls}">+${w}</span></td>
+            <td style="font-family:var(--mono);color:var(--cyan)">${typeof tot==='number'?tot.toFixed(2):tot}</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>
+      <div style="margin-top:.8rem;font-size:.76rem;color:var(--green);font-family:var(--mono)">
+        ✅ Risk profile updated. Next drug check will use these new weights.
+      </div>`;
+    showA('fde-alert','🚨 FDE reported. WCIS model updated!','warn');
+    try{ await loadAll(); }catch(_){ /* reload failed but stay on page */ }
+  }catch(e){showA('fde-alert','Server error — check Flask is running.','err');}
+}
+
+function quickFDE(doseId){
+  document.getElementById('fde-sel').value=doseId;
+  showTab('fde-check');
+  setTimeout(()=>document.getElementById('fde-sel').scrollIntoView({behavior:'smooth',block:'center'}),200);
+}
+
+// ── NAV ───────────────────────────────────────────────
+function showTab(name){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.ntab').forEach(b=>b.classList.remove('a'));
+  document.getElementById(`tab-${name}`).classList.add('on');
+  const tabs=['dashboard','dosage','fde-check','fde-events','algorithm','image-scan'];
+  document.querySelectorAll('.ntab').forEach((b,i)=>{if(tabs[i]===name)b.classList.add('a');});
+  if(name==='image-scan') initImageTab();
+}
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+}
+
+// ── UTILS ─────────────────────────────────────────────
+const v=id=>document.getElementById(id)?.value?.trim()||'';
+async function api(method,url,body){
+  const opts={method,headers:{'Content-Type':'application/json'}};
+  if(body&&method!=='GET')opts.body=JSON.stringify(body);
+  try{
+    const r=await fetch(url,opts);
+    const data=await r.json();
+    // Never auto-logout — only explicit logout() call should do that
+    return data;
+  }catch(e){
+    console.warn('[api] fetch error:',method,url,e.message);
+    return {error: e.message};
+  }
+}
+function showA(id,msg,type){
+  const el=document.getElementById(id);
+  el.textContent=msg; el.className=`alert ${type} on`;
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('on'),5500);
+}
+function clrA(id){document.getElementById(id).className='alert';}
+
+// ── IMAGE SCAN ────────────────────────────────────────
+let imgFile = null;
+
+async function initImageTab(){
+  try{
+    const s = await fetch(API+'/image/model_status').then(r=>r.json());
+    const el = document.getElementById('img-model-status');
+    if(s.model_trained){
+      el.innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem .8rem;margin-top:.3rem">
+          <div>🟢 <b style="color:#22c55e">Model ready</b></div>
+          <div>🧠 ${s.architecture||'MobileNetV2'}</div>
+          <div>📦 ${s.dataset||'DermNet'}</div>
+          <div>📐 Input: ${s.input_size||'224×224×3'}</div>
+          <div>🎯 Accuracy: <b style="color:var(--cyan)">${s.test_accuracy?(s.test_accuracy*100).toFixed(1)+'%':'N/A'}</b></div>
+          <div>📈 AUC: <b style="color:var(--cyan)">${s.test_auc?(s.test_auc).toFixed(4):'N/A'}</b></div>
+          <div>HIGH ≥ ${s.fde_thresholds?.HIGH||'≥0.65'}</div>
+          <div>MOD ${s.fde_thresholds?.MODERATE||'≥0.40'}</div>
+        </div>`;
+    } else {
+      el.innerHTML = `<div style="color:#f59e0b">⚠️ Model not trained yet.</div>
+        <pre style="margin-top:.6rem;font-size:.7rem;white-space:pre-wrap;color:var(--muted2)">${s.setup_instructions||''}</pre>`;
+    }
+  } catch(e){
+    document.getElementById('img-model-status').textContent = '⚠️ Could not reach backend.';
+  }
+}
+
+function handleImgDrop(e){
+  e.preventDefault();
+  document.getElementById('img-dropzone').style.borderColor='rgba(0,212,255,.35)';
+  const file = e.dataTransfer?.files?.[0];
+  if(file) loadImgFile(file);
+}
+
+function previewImg(input){
+  const file = input.files?.[0];
+  if(file) loadImgFile(file);
+}
+
+function loadImgFile(file){
+  if(!file.type.startsWith('image/')){
+    showA('img-alert','Please upload a JPEG, PNG, or WEBP image.','err'); return;
+  }
+  if(file.size > 10*1024*1024){
+    showA('img-alert','Image too large. Max 10 MB.','err'); return;
+  }
+  imgFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('img-preview').src = e.target.result;
+    document.getElementById('img-fname').textContent = file.name + ' · ' + (file.size/1024).toFixed(1)+' KB';
+    document.getElementById('img-preview-wrap').style.display = '';
+    document.getElementById('img-dropzone').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+  clearImgResult();
+}
+
+function clearImgState(){
+  imgFile = null;
+  document.getElementById('img-file').value = '';
+  document.getElementById('img-preview-wrap').style.display = 'none';
+  document.getElementById('img-dropzone').style.display = '';
+  clearImgResult();
+}
+
+function clearImgResult(){
+  document.getElementById('img-result-card').style.display = 'none';
+  document.getElementById('img-gradcam-card').style.display = 'none';
+  document.getElementById('img-loader').style.display = 'none';
+}
+
+async function runImgPredict(withGradcam){
+  if(!imgFile){ showA('img-alert','Please select an image first.','err'); return; }
+  clearImgResult();
+  document.getElementById('img-loader').style.display = '';
+  document.getElementById('img-loader-text').textContent = withGradcam
+    ? 'Running CNN + generating GRAD-CAM heatmap…'
+    : 'Running CNN inference…';
+
+  const fd = new FormData();
+  fd.append('file', imgFile);
+  if(U) fd.append('patient_id', U.patient_id);
+
+  try {
+    const endpoint = withGradcam ? '/image/gradcam' : '/image/predict_fde';
+    const r = await fetch(API + endpoint, {method:'POST', body:fd});
+    const d = await r.json();
+    document.getElementById('img-loader').style.display = 'none';
+
+    if(d.error){ showA('img-alert', d.error, 'err'); return; }
+
+    const pred = withGradcam ? d.prediction : d;
+    renderImgResult(pred);
+
+    if(withGradcam && d.gradcam_image){
+      document.getElementById('img-gradcam').src = d.gradcam_image;
+      document.getElementById('img-gradcam-card').style.display = '';
+    }
+  } catch(e){
+    document.getElementById('img-loader').style.display = 'none';
+    showA('img-alert','Network error — is the backend running?','err');
+  }
+}
+
+async function runImgCombined(){
+  if(!imgFile){ showA('img-alert','Please select an image first.','err'); return; }
+  if(!U){ showA('img-alert','Login required for combined analysis.','err'); return; }
+  const comps = document.getElementById('img-components').value.trim();
+  if(!comps){ showA('img-alert','Enter at least one component for combined mode.','err'); return; }
+
+  clearImgResult();
+  document.getElementById('img-loader').style.display = '';
+  document.getElementById('img-loader-text').textContent = 'Running CNN + WCIS combined analysis…';
+
+  const fd = new FormData();
+  fd.append('file', imgFile);
+  fd.append('patient_id', U.patient_id);
+  fd.append('medicine_name', document.getElementById('img-medname').value.trim());
+  fd.append('components', comps);
+
+  try {
+    const r = await fetch(API+'/image/predict_fde_combined', {method:'POST', body:fd});
+    const d = await r.json();
+    document.getElementById('img-loader').style.display = 'none';
+    if(d.error){ showA('img-alert', d.error, 'err'); return; }
+    renderImgCombinedResult(d);
+  } catch(e){
+    document.getElementById('img-loader').style.display = 'none';
+    showA('img-alert','Network error — is the backend running?','err');
+  }
+}
+
+function riskBadge(level, score, color){
+  return `<div style="display:inline-flex;align-items:center;gap:.5rem;background:${color}22;
+    border:1px solid ${color}55;border-radius:8px;padding:.5rem 1rem;margin-bottom:.8rem">
+    <span style="font-size:1.4rem">${level==='HIGH'?'⛔':level==='MODERATE'?'⚠️':'✅'}</span>
+    <div>
+      <div style="font-weight:700;color:${color};font-size:1rem">${level} RISK</div>
+      <div style="font-size:.72rem;color:var(--muted2)">FDE Score: ${(score*100).toFixed(1)}%</div>
+    </div>
+  </div>`;
+}
+
+function renderImgResult(d){
+  const card = document.getElementById('img-result-card');
+  const body = document.getElementById('img-result-body');
+  const top5 = (d.top_predictions||[]).slice(0,5);
+
+  const barsHtml = top5.map(p=>{
+    const cat = p.fde_category||'NOT_FDE';
+    const barColor = cat==='FDE_HIGH'?'#ef4444':cat==='FDE_MODERATE'?'#f59e0b':
+                     cat==='DIFFERENTIAL'?'#a78bfa':'rgba(255,255,255,.18)';
+    return `<div style="margin-bottom:.55rem">
+      <div style="display:flex;justify-content:space-between;font-size:.72rem;margin-bottom:.2rem">
+        <span style="color:var(--text)">${p.class}</span>
+        <span style="color:${barColor}">${p.probability.toFixed(1)}% <span style="color:var(--muted2)">[${cat}]</span></span>
+      </div>
+      <div style="height:6px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${Math.min(p.probability,100)}%;background:${barColor};border-radius:4px;transition:.4s"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  body.innerHTML = `
+    ${riskBadge(d.risk_level, d.fde_score, d.risk_color)}
+    <div style="font-size:.78rem;color:var(--muted2);line-height:1.7;margin-bottom:1rem;padding:.7rem;
+         background:rgba(255,255,255,.03);border-radius:8px;border-left:3px solid ${d.risk_color}">
+      ${d.recommendation||''}
+    </div>
+    <div style="font-size:.72rem;font-weight:600;color:var(--muted2);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.06em">
+      Top DermNet Matches
+    </div>
+    ${barsHtml}
+    <div style="margin-top:.8rem;font-size:.7rem;color:var(--muted2);font-family:var(--mono);
+         padding:.6rem;background:rgba(0,0,0,.2);border-radius:6px">
+      ${d.explanation||''}
+    </div>
+    <div style="margin-top:.4rem;font-size:.68rem;color:rgba(255,255,255,.3);font-family:var(--mono)">
+      ⚙️ ${d.algorithm_note||''}
+      ${d.model_info?` · Accuracy: ${d.model_info.test_accuracy!=='N/A'?(d.model_info.test_accuracy*100).toFixed(1)+'%':d.model_info.test_accuracy}`:''}
+    </div>`;
+  card.style.display = '';
+}
+
+function renderImgCombinedResult(d){
+  const card = document.getElementById('img-result-card');
+  const body = document.getElementById('img-result-body');
+  const img  = d.image_analysis || {};
+  const wcis = d.wcis_risk || null;
+
+  body.innerHTML = `
+    <div style="margin-bottom:.8rem">
+      <div style="font-size:.72rem;font-weight:600;color:var(--muted2);text-transform:uppercase;
+           letter-spacing:.06em;margin-bottom:.4rem">Combined Verdict</div>
+      ${riskBadge(d.combined_verdict, d.combined_score, d.combined_color)}
+      <div style="font-size:.78rem;color:var(--muted2);padding:.6rem;background:rgba(255,255,255,.03);
+           border-radius:8px;border-left:3px solid ${d.combined_color};line-height:1.6">
+        ${d.explanation}
+      </div>
+      <div style="font-size:.7rem;color:rgba(255,255,255,.3);font-family:var(--mono);margin-top:.4rem">
+        Method: ${d.scoring_method}
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-top:.8rem">
+      <div style="padding:.8rem;background:rgba(255,255,255,.03);border-radius:8px">
+        <div style="font-size:.7rem;font-weight:600;color:var(--muted2);margin-bottom:.4rem">📷 CNN IMAGE</div>
+        <div style="color:${img.risk_color};font-weight:700">${img.risk_level}</div>
+        <div style="font-size:.72rem;color:var(--muted2)">Score: ${((img.fde_score||0)*100).toFixed(1)}%</div>
+      </div>
+      <div style="padding:.8rem;background:rgba(255,255,255,.03);border-radius:8px">
+        <div style="font-size:.7rem;font-weight:600;color:var(--muted2);margin-bottom:.4rem">💊 WCIS DRUG</div>
+        ${wcis && wcis.risk_level
+          ? `<div style="color:${wcis.risk_color};font-weight:700">${wcis.risk_level}</div>
+             <div style="font-size:.72rem;color:var(--muted2)">Score: ${wcis.risk_score?.toFixed(2)}</div>`
+          : `<div style="color:var(--muted2);font-size:.78rem">No components</div>`}
+      </div>
+    </div>`;
+  card.style.display = '';
+}
+
+// Auto-load model status when Image Scan tab opened
+const _origShowTab = typeof showTab === 'function' ? showTab : null;
+
+</script>
+</body>
+</html>

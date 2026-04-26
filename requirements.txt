@@ -1,0 +1,14 @@
+flask
+flask-cors
+pandas
+scikit-learn
+openpyxl
+
+# ── Image recognition / CNN ───────────────────────────
+tensorflow>=2.13.0
+pillow>=10.0.0
+matplotlib>=3.7.0
+numpy>=1.24.0
+
+# ── Optional: Kaggle CLI (for DermNet download) ───────
+# kaggle
